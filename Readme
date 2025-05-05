@@ -1,0 +1,71 @@
+# Cadastral Reference Scraper
+
+This project automates the extraction of property information from the Spanish Cadastre website using Selenium and a list of cadastral references.
+
+## Features
+
+- Reads a list of cadastral references from a CSV file.
+- Navigates the official Cadastre website and searches each reference.
+- Extracts key property data, including:
+  - **Uso principal** (Main Use)
+  - **Superficie construida** (Built Area)
+- Handles errors, retries failed attempts, and logs progress.
+- Saves results to a CSV file for further analysis.
+
+## Requirements
+
+- Python 3.7+
+- Google Chrome browser
+- ChromeDriver (automatically managed)
+- Internet connection
+
+### Python Packages
+
+Install dependencies with:
+
+```
+pip install selenium webdriver-manager pandas
+```
+
+## Usage
+
+1. **Prepare your input file**  
+   Place your cadastral references (one per line) in a file named cadastral_references.csv in the project directory.
+
+2. **Run the scraper**
+
+   ```
+   python scrape_cadastre.py
+   ```
+
+3. **Check results**  
+   The script will create or append to `cadastre_results.csv` with the extracted data.
+
+## Output
+
+The output CSV will have columns:
+
+- `Reference`
+- `Uso principal`
+- `Superficie construida`
+
+## Notes
+
+- The script uses a visible Chrome window for debugging. To run headless, uncomment the `--headless` option in the script.
+- If the input file is missing, the script will log an error and exit.
+- The script includes retry logic for robustness against network or site issues.
+
+## Troubleshooting
+
+- Make sure Chrome is installed and up to date.
+- If you encounter issues with ChromeDriver, delete any cached drivers and rerun the script.
+- For large lists, consider increasing delays or splitting the input file to avoid rate limits.
+
+## License
+
+MIT License
+
+---
+
+**Disclaimer:**  
+This tool is for educational and research purposes. Use responsibly and respect the terms of the Cadastre website.
