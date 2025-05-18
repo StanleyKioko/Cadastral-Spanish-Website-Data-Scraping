@@ -19,7 +19,7 @@ options = Options()
 # Comment out headless mode for debugging
 # options.add_argument('--headless')
 options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-dev-shorp-usage')
 options.add_argument('--disable-gpu')
 options.add_argument('--window-size=1920,1080')
 options.add_argument('--disable-extensions')
@@ -59,7 +59,7 @@ def scrape_cadastre(reference, max_retries=3):
             page_source = driver.page_source.lower()
             if "access denied" in page_source or "server error" in page_source:
                 logging.error("Access denied or server error detected")
-                return {'Reference': reference, 'Uso principal': 'Access Error', 'Superficie construida': 'Access Error'}
+                return {'Reference': reference, 'Uso principal': 'Access Error', 'Superficie construida': 'Access Error', 'Año construcción': 'Access Error'}
             
             # Handle potential cookie popup
             try:
@@ -161,7 +161,7 @@ def scrape_cadastre(reference, max_retries=3):
                 if error_div.is_displayed():
                     error_message = error_div.text
                     logging.error(f"Validation error detected: {error_message}")
-                    return {'Reference': reference, 'Uso principal': 'Validation Error', 'Superficie construida': error_message}
+                    return {'Reference': reference, 'Uso principal': 'Validation Error', 'Superficie construida': error_message, 'Año construcción': 'Validation Error'}
             except:
                 logging.info("No validation error detected")
             
@@ -212,7 +212,18 @@ def scrape_cadastre(reference, max_retries=3):
             except:
                 logging.warning(f"Superficie construida not found for {reference}")
             
-            return {'Reference': reference, 'Uso principal': uso_principal, 'Superficie construida': superficie}
+            # Extract "Año construcción"
+            ano_construccion = 'Not found'
+            try:
+                ano_element = WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, '//span[contains(text(), "Año construcción")]/following-sibling::div//label'))
+                )
+                ano_construccion = ano_element.text.strip()
+                logging.info(f"Extracted Año construcción: {ano_construccion}")
+            except:
+                logging.warning(f"Año construcción not found for {reference}")
+            
+            return {'Reference': reference, 'Uso principal': uso_principal, 'Superficie construida': superficie, 'Año construcción': ano_construccion}
         
         except Exception as e:
             logging.error(f"Error processing {reference} on attempt {attempt + 1}: {str(e)}")
@@ -228,14 +239,14 @@ def scrape_cadastre(reference, max_retries=3):
                 logging.info("Retrying after 5 seconds...")
                 time.sleep(5)
                 continue
-            return {'Reference': reference, 'Uso principal': 'Error', 'Superficie construida': 'Error'}
+            return {'Reference': reference, 'Uso principal': 'Error', 'Superficie construida': 'Error', 'Año construcción': 'Error'}
 
 # Process each reference
 for ref in references:
     logging.info(f"Processing {ref}...")
     result = scrape_cadastre(ref)
     output_data.append(result)
-    logging.info(f"Completed processing {ref}: Uso principal={result['Uso principal']}, Superficie construida={result['Superficie construida']}")
+    logging.info(f"Completed processing {ref}: Uso principal={result['Uso principal']}, Superficie construida={result['Superficie construida']}, Año construcción={result['Año construcción']}")
     time.sleep(2)  # Small delay before reloading the page
 
 # Save results to CSV
